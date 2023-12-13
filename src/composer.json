@@ -1,0 +1,17 @@
+{
+    "name": "but-info-nevers/tp-performances-backend",
+    "require": {
+        "ext-pdo": "*"
+    },
+    "autoload": {
+        "files": [
+            "Common/functions.php"
+        ],
+        "psr-4": {
+            "App\\" : "."
+        }
+    },
+    "require-dev": {
+        "symfony/var-dumper": "^5.4"
+    }
+}

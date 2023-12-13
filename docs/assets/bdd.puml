@@ -1,0 +1,37 @@
+@startuml class
+
+hide methods
+
+note top of HotelEntity : <color:IndianRed>Champs stockés dans wp_users</color>\n<color:Teal>Champs stockés dans wp_usermeta</color>
+
+class HotelEntity <<wp_users>>{
+  - <color:IndianRed>int id</color>
+  - <color:IndianRed>string name</color>
+  - <color:Teal>string mail</color>
+  - <color:Teal>string[] address</color>
+  - <color:Teal>string phone</color>
+  - <color:Teal>string geoLat</color>
+  - <color:Teal>string geoLng</color>
+  - <color:Teal>string imageUrl</color>
+  - int ratingCount
+  - int rating
+  - RoomEntity cheapestRoom
+  - float|null distance
+}
+
+note top of RoomEntity : <color:IndianRed>Champs stockés dans wp_posts</color>\n<color:Teal>Champs stockés dans wp_postmeta</color>
+
+class RoomEntity <<wp_posts>> {
+  - <color:IndianRed>int id</color>
+  - <color:IndianRed>string title</color>
+  - <color:Teal>string price</color>
+  - <color:Teal>string coverImageUrl</color>
+  - <color:Teal>int bedRoomsCount</color>
+  - <color:Teal>int bathRoomsCount</color>
+  - <color:Teal>int surface</color>
+  - <color:Teal>string type</color>
+}
+
+HotelEntity -right- RoomEntity
+
+@enduml

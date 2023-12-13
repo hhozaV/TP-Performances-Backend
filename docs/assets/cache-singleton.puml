@@ -1,0 +1,12 @@
+@startuml cache-singleton
+
+class Cache <<singleton>> {
+  - {static} instance : Cache
+  - cache : AdapterInterface
+  - __construct()
+  + get() : AdapterInterface
+}
+
+note right of Cache : La méthode get() et la propriété instance sont statiques
+
+@enduml
