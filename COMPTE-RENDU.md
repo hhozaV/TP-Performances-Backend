@@ -6,7 +6,7 @@ Vous pouvez utiliser ce [GSheets](https://docs.google.com/spreadsheets/d/13Hw27U
 
 **Choix des méthodes à analyser** :
 
-- `getMeta` 4.01s
+- `getCheapestRoom` 15.43s
 - `getMetas` 4.21s
 - `getReviews` 8.87s
 

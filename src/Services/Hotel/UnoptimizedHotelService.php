@@ -85,6 +85,25 @@ class UnoptimizedHotelService extends AbstractHotelService {
     $timer = Timers::getInstance();
     $timerId = $timer->startTimer('getMetas');
 
+    $db = $this->getDB();
+    $stmt = $db->prepare("SELECT meta_key, meta_value FROM wp_usermeta WHERE user_id = 1");
+    $stmt->execute();
+
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    echo"<pre>";
+    var_dump($result);
+    echo "</pre>";
+    die();
+
+    /* 
+      On veut formater le tableau "result" pour pouvoir rempir le tableau $metaData
+on voudrait un tableau qui ressemble à :
+array(
+  "adresse_1" => "13 Quai Saint-Dominique"
+);
+une fois qu'on aura ça on remplacera les valeurs de meta data par le données du array.
+    */
+
     $metaDatas = [
       'address' => [
         'address_1' => $this->getMeta( $hotel->getId(), 'address_1' ),
@@ -156,6 +175,8 @@ class UnoptimizedHotelService extends AbstractHotelService {
    * @return RoomEntity
    */
   protected function getCheapestRoom ( HotelEntity $hotel, array $args = [] ) : RoomEntity {
+    $timer = Timers::getInstance();
+    $timerId = $timer->startTimer('getCheapestRoom');
     // On charge toutes les chambres de l'hôtel
     $stmt = $this->getDB()->prepare( "SELECT * FROM wp_posts WHERE post_author = :hotelId AND post_type = 'room'" );
     $stmt->execute( [ 'hotelId' => $hotel->getId() ] );
@@ -214,6 +235,8 @@ class UnoptimizedHotelService extends AbstractHotelService {
         $cheapestRoom = $room;
     endforeach;
     
+    $timer->endTimer('getCheapestRoom', $timerId);
+
     return $cheapestRoom;
   }
   
