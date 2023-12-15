@@ -3,6 +3,7 @@
 namespace App\Services\Room;
 
 use App\Entities\RoomEntity;
+use App\Common\Singleton;
 use PDO;
 
 class RoomService extends AbstractRoomService {
@@ -14,7 +15,7 @@ class RoomService extends AbstractRoomService {
   }
   
   protected function getDB() : PDO {
-    return $this->db;
+    return Singleton::getInstance();
   }
   
   public function get(int $id) : RoomEntity {
