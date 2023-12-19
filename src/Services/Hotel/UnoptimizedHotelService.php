@@ -50,25 +50,6 @@ class UnoptimizedHotelService extends AbstractHotelService {
    *
    * @return string|null
    */
-  protected function getMeta(int $userId, string $key): ?string {
-    $timer = Timers::getInstance();
-    $timerId = $timer->startTimer('getMeta');
-
-    $db = $this->getDB();
-    $stmt = $db->prepare("SELECT * FROM wp_usermeta");
-    $stmt->execute();
-
-    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $output = null;
-    foreach ($result as $row) {
-        if ($row['user_id'] === $userId && $row['meta_key'] === $key)
-            $output = $row['meta_value'];
-    }
-
-    $timer->endTimer('getMeta', $timerId);
-
-    return $output;
-}
 
   
   
@@ -86,36 +67,28 @@ class UnoptimizedHotelService extends AbstractHotelService {
     $timerId = $timer->startTimer('getMetas');
 
     $db = $this->getDB();
-    $stmt = $db->prepare("SELECT meta_key, meta_value FROM wp_usermeta WHERE user_id = 1");
-    $stmt->execute();
-
-    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    echo"<pre>";
-    var_dump($result);
-    echo "</pre>";
-    die();
-
-    /* 
-      On veut formater le tableau "result" pour pouvoir rempir le tableau $metaData
-on voudrait un tableau qui ressemble à :
-array(
-  "adresse_1" => "13 Quai Saint-Dominique"
-);
-une fois qu'on aura ça on remplacera les valeurs de meta data par le données du array.
-    */
+    $stmt = $db->prepare( "SELECT meta_key, meta_value FROM `wp_usermeta` WHERE `user_id` = :hotel_id" );
+    $stmt->execute(["hotel_id" => $hotel->getId()]);
+ 
+    $result = $stmt->fetchAll(PDO::FETCH_NAMED);
+ 
+    $meta =[];
+    foreach($result as $row){
+      $meta[$row['meta_key']] = $row['meta_value'];
+    }
 
     $metaDatas = [
       'address' => [
-        'address_1' => $this->getMeta( $hotel->getId(), 'address_1' ),
-        'address_2' => $this->getMeta( $hotel->getId(), 'address_2' ),
-        'address_city' => $this->getMeta( $hotel->getId(), 'address_city' ),
-        'address_zip' => $this->getMeta( $hotel->getId(), 'address_zip' ),
-        'address_country' => $this->getMeta( $hotel->getId(), 'address_country' ),
+        'address_1' => $meta['address_1'],
+        'address_2' => $meta['address_2'],
+        'address_city' => $meta['address_city'],
+        'address_zip' => $meta['address_zip'],
+        'address_country' => $meta['address_country'],
       ],
-      'geo_lat' =>  $this->getMeta( $hotel->getId(), 'geo_lat' ),
-      'geo_lng' =>  $this->getMeta( $hotel->getId(), 'geo_lng' ),
-      'coverImage' =>  $this->getMeta( $hotel->getId(), 'coverImage' ),
-      'phone' =>  $this->getMeta( $hotel->getId(), 'phone' ),
+      'geo_lat' =>  $meta['geo_lat'],
+      'geo_lng' =>  $meta['geo_lng'],
+      'coverImage' =>  $meta['coverImage'],
+      'phone' =>  $meta['address_country'],
     ];
 
     $timer->endTimer('getMetas', $timerId);
@@ -136,18 +109,14 @@ une fois qu'on aura ça on remplacera les valeurs de meta data par le données d
     $timer = Timers::getInstance();
     $timerId = $timer->startTimer('getReviews');
     // Récupère tous les avis d'un hotel
-    $stmt = $this->getDB()->prepare( "SELECT * FROM wp_posts, wp_postmeta WHERE wp_posts.post_author = :hotelId AND wp_posts.ID = wp_postmeta.post_id AND meta_key = 'rating' AND post_type = 'review'" );
+    $stmt = $this->getDB()->prepare( "SELECT AVG(meta_value) AS rating, COUNT(meta_value) AS ratingCount FROM wp_posts, wp_postmeta WHERE wp_posts.post_author = :hotelId AND wp_posts.ID = wp_postmeta.post_id AND meta_key = 'rating' AND post_type = 'review';" );
     $stmt->execute( [ 'hotelId' => $hotel->getId() ] );
-    $reviews = $stmt->fetchAll( PDO::FETCH_ASSOC );
-    
-    // Sur les lignes, ne garde que la note de l'avis
-    $reviews = array_map( function ( $review ) {
-      return intval( $review['meta_value'] );
-    }, $reviews );
-    
+    $reviews = $stmt->fetchAll( PDO::FETCH_ASSOC )[0];
+
+
     $output = [
-      'rating' => round( array_sum( $reviews ) / count( $reviews ) ),
-      'count' => count( $reviews ),
+        'rating' => intval($reviews['rating']),
+        'count' => $reviews['ratingCount'],
     ];
 
     $timer->endTimer('getReviews', $timerId);
@@ -189,6 +158,31 @@ une fois qu'on aura ça on remplacera les valeurs de meta data par le données d
     $rooms = array_map( function ( $row ) {
       return $this->getRoomService()->get( $row['ID'] );
     }, $stmt->fetchAll( PDO::FETCH_ASSOC ) );
+
+    /* 
+    SELECT post.ID,
+          post.post_title AS title,
+          MIN(PriceData.meta_value) AS price,
+          SurfaceData.meta_value AS surface,
+          TypeData.meta_value AS types,
+          BedroomsCountData.meta_value AS bedrooms,
+          BathroomsCountData.meta_value AS bathrooms
+        
+          FROM tp.wp_posts AS post
+        
+          INNER JOIN tp.wp_postmeta AS SurfaceData
+            ON post.ID = SurfaceData.post_id AND SurfaceData.meta_key = 'surface'
+        
+          INNER JOIN tp.wp_postmeta AS PriceData
+            ON post.ID = PriceData.post_id AND PriceData.meta_key = 'price'
+        
+          INNER JOIN tp.wp_postmeta AS TypeData
+            ON post.ID = TypeData.post_id AND TypeData.meta_key = 'type'
+          INNER JOIN tp.wp_postmeta AS BedroomsCountData
+            ON post.ID = BedroomsCountData.post_id AND BedroomsCountData.meta_key = 'bedrooms_count'
+          INNER JOIN tp.wp_postmeta AS BathroomsCountData
+            ON post.ID = BathroomsCountData.post_id AND BathroomsCountData.meta_key = 'bathrooms_count'
+    */
     
     // On exclut les chambres qui ne correspondent pas aux critères
     $filteredRooms = [];
