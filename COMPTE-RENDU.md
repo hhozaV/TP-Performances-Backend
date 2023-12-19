@@ -29,7 +29,7 @@ Vous pouvez utiliser ce [GSheets](https://docs.google.com/spreadsheets/d/13Hw27U
 
 - **Avant** 27.12s
 
-- **Après** 18.8s
+- **Après** 21.1s
 
 
 #### Amélioration de la méthode `getMetas` et donc de la méthode `getMeta` :
@@ -98,7 +98,7 @@ SELECT post.ID,
             ON post.ID = BathroomsCountData.post_id AND BathroomsCountData.meta_key = 'bathrooms_count'       
           INNER JOIN tp.wp_postmeta AS CoverImageData
             ON post.ID = CoverImageData.post_id AND CoverImageData.meta_key = 'coverImage'
-      ";
+      ;
 
         $whereClauses[] = "post.post_author = :hotelID AND post.post_type = 'room'";
 
