@@ -27,9 +27,9 @@ Vous pouvez utiliser ce [GSheets](https://docs.google.com/spreadsheets/d/13Hw27U
 
 **Temps de chargement globaux** 
 
-- **Avant** TEMPS
+- **Avant** 27.12s
 
-- **Après** TEMPS
+- **Après** 18.8s
 
 
 #### Amélioration de la méthode `getMetas` et donc de la méthode `getMeta` :
