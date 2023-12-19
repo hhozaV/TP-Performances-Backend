@@ -66,16 +66,62 @@ SELECT AVG(meta_value) AS rating, COUNT(meta_value) AS ratingCount FROM wp_posts
 
 #### Amélioration de la méthode `getCheapestRoom` :
 
-- **Avant** TEMPS
+- **Avant** 15.43s
 
 ```sql
--- REQ SQL DE BASE
+SELECT * FROM wp_posts WHERE post_author = :hotelId AND post_type = 'room'
 ```
 
 - **Après** TEMPS
 
 ```sql
--- NOUVELLE REQ SQL
+SELECT post.ID,
+          post.post_title AS title,
+          MIN(CAST(PriceData.meta_value AS float)) AS price,
+          CAST(SurfaceData.meta_value AS int) AS surface,
+          TypeData.meta_value AS types,
+          CAST(BedroomsCountData.meta_value AS int) AS bedrooms,
+          CAST(BathroomsCountData.meta_value AS int) AS bathrooms,
+          CoverImageData.meta_value AS coverImage
+        
+          FROM tp.wp_posts AS post
+        
+          INNER JOIN tp.wp_postmeta AS SurfaceData
+            ON post.ID = SurfaceData.post_id AND SurfaceData.meta_key = 'surface'
+          INNER JOIN tp.wp_postmeta AS PriceData
+            ON post.ID = PriceData.post_id AND PriceData.meta_key = 'price'     
+          INNER JOIN tp.wp_postmeta AS TypeData
+            ON post.ID = TypeData.post_id AND TypeData.meta_key = 'type'
+          INNER JOIN tp.wp_postmeta AS BedroomsCountData
+            ON post.ID = BedroomsCountData.post_id AND BedroomsCountData.meta_key = 'bedrooms_count'
+          INNER JOIN tp.wp_postmeta AS BathroomsCountData
+            ON post.ID = BathroomsCountData.post_id AND BathroomsCountData.meta_key = 'bathrooms_count'       
+          INNER JOIN tp.wp_postmeta AS CoverImageData
+            ON post.ID = CoverImageData.post_id AND CoverImageData.meta_key = 'coverImage'
+      ";
+
+        $whereClauses[] = "post.post_author = :hotelID AND post.post_type = 'room'";
+
+        if (isset($args['surface']['min']))
+            $whereClauses[] = 'SurfaceData.meta_value >= :surfaceMin';
+
+        if (isset($args['surface']['max']))
+            $whereClauses[] = 'SurfaceData.meta_value <= :surfaceMax';
+
+        if (isset($args['price']['min']))
+            $whereClauses[] = 'PriceData.meta_value >= :priceMin';
+
+        if (isset($args['price']['max']))
+            $whereClauses[] = 'PriceData.meta_value <= :priceMax';
+
+        if (isset($args['rooms']))
+            $whereClauses[] = 'BedroomsCountData.meta_value >= :roomsBed';
+
+        if (isset($args['bathRooms']))
+            $whereClauses[] = 'BathroomsCountData.meta_value >= :bathRooms';
+
+        if (isset($args['types']) && !empty($args['types']))
+            $whereClauses[] = "TypeData.meta_value IN('" . implode("', '", $args["types"]) . "')";
 ```
 
 
