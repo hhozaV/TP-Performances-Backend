@@ -29,7 +29,7 @@ Vous pouvez utiliser ce [GSheets](https://docs.google.com/spreadsheets/d/13Hw27U
 
 - **Avant** 27.12s
 
-- **Après** 21.1s
+- **Après** 20.3s
 
 
 #### Amélioration de la méthode `getMetas` et donc de la méthode `getMeta` :
@@ -72,7 +72,7 @@ SELECT AVG(meta_value) AS rating, COUNT(meta_value) AS ratingCount FROM wp_posts
 SELECT * FROM wp_posts WHERE post_author = :hotelId AND post_type = 'room'
 ```
 
-- **Après** TEMPS
+- **Après** 11.62s
 
 ```sql
 SELECT post.ID,
